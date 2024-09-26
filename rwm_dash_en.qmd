@@ -8,7 +8,7 @@ format:
       dark: darkly
     nav-buttons:
           - icon: github
-            href: https://github.com/arnemaass/rwe_dash 
+            href: https://github.com/arnemaass/rwm_dash 
 lang: en
 server: shiny
 ---
