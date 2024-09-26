@@ -1,6 +1,10 @@
 # Right-Wing Extremism Dashboard
 
-https://germanextremismplotly.shinyapps.io/rwe_dash_en/#start
+This is the repository for creating the right wing extremist mobilization dashboard:
+https://germanextremismplotly.shinyapps.io/rwm_dash_en/#start
+
+The data is available at: 
+https://data.gesis.org/sharing/#!Detail/10.7802/2256
 
 ![image](https://github.com/user-attachments/assets/abcaea1d-49df-4c71-b667-4bbb6d15a345)
 
@@ -10,6 +14,4 @@ https://germanextremismplotly.shinyapps.io/rwe_dash_en/#start
 
 ![image](https://github.com/user-attachments/assets/1a3a9fc3-baef-4fa1-ac83-eed385ca2e3d)
 
-
-more to follow ...
 
