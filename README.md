@@ -1,6 +1,6 @@
 # Right-Wing Extremism Dashboard
 
-This is the repository for creating the right wing extremist mobilization dashboard:
+This is the repository for creating the right-wing extremist mobilization dashboard:
 https://germanextremismplotly.shinyapps.io/rwm_dash_en/#start
 
 The data is available at: 
