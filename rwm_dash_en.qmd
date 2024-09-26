@@ -1,0 +1,319 @@
+---
+title: "Data-Exploration"
+author: by Eylem Kanol | Arne Maaß | Johanna Knoesel
+format:
+  dashboard:
+    theme:
+      light: simplex
+      dark: darkly
+    nav-buttons:
+          - icon: github
+            href: https://github.com/arnemaass/rwe_dash 
+lang: en
+server: shiny
+---
+
+```{r}
+#| context: setup
+
+rm(list = ls())
+
+# locally
+# setwd("C:/Users/user/OneDrive/Desktop/WZB/PMK/2024/rwm_dash")
+# shared
+# setwd("Z:/Shared/Shiny/2024/rwm_dash")
+# getwd()
+
+
+library(tidyverse)
+library(quarto)
+library(arrow) # PARQUET FOR FASTER LOADING
+library(ggplot2)
+library(viridis)
+library(hrbrthemes)
+library(sf)
+library(plotly)
+library(leaflet) # for faster map-plotting then plotly
+library(htmltools)
+# remotes::install_version("rsconnect", "0.8.29")
+library(rsconnect)
+library(shiny)
+
+rwm1<- readRDS("data/rwm_shiny.rds")
+rwm2<- read_parquet("data/rwm_stateyear.parquet") # %>% select(participants, yearmonth, state, year )
+
+
+```
+
+<!-- ENGLISH VERSION -->
+
+# Start
+
+```{r}
+
+mainPanel(
+  h2("Right-Wing Extremist Mobilization in Germany 2000-2022", style = "text-align: center;"),
+  h5("Eylem Kanol | Arne Maaß | Johanna Knoesel", style = "text-align: center;"),
+  tags$br(),
+  h5(HTML(
+    "Welcome to our dashboard presenting a dataset on right-wing extremist demonstrations in Germany from 2005 to December 2022. It was compiled using the German federal government’s responses to brief parliamentary questions (<em>kleine Anfragen</em>) from the left-wing party, Die Linke. Since 2005, Die Linke has consistently inquired about these demonstrations. The government’s responses detail the date, location, organizer, motto, and number of participants at each event. We imported, cleaned, and merged the available data and geocoded the location variables.
+    <br><br>
+    At the top of the dashboard, you can navigate between visualizations and apply filters according to your preferences.
+    <br><br>
+    <ul style='text-align: left; display: inline-block;'>
+      <li><strong>Overview:</strong> Offers a static, downloadable wall poster summarizing the main findings.</li>
+      <li><strong>Map:</strong> Displays an interactive county-level mobilization map of demonstrations classified by the Domestic Intelligence Service as right-wing extremist.</li>
+      <li><strong>Timeline:</strong> Provides an interactive aggregation of demonstrations at the federal state level and illustrates their development over time.</li>
+    </ul>"
+  ), style = "text-align: center;"),
+  tags$br(),
+  tags$div(
+    style = "width: 100%; display: flex; justify-content: center; align-items: center; flex-direction: row;",  # Changed flex-direction to row
+    tags$a(
+      href = "https://www.wzb.eu",
+      tags$img(
+        src = "www/wzb-wide-text.png",
+        style = "width: 200px; height: auto; margin-right: 30px;"  # Added margin between logos
+      )
+    ),
+    tags$a(
+      href = "https://motra.info",
+      tags$img(
+        src = "www/MOTRA-Logo_RGB_Original.png",
+        style = "width: 200px; height: auto; margin-left: 30px;"
+      )
+    )
+  )
+)
+
+
+```
+
+# Overview
+
+```{r}
+
+mainPanel(
+  tags$iframe(
+    style = "height:800px; width:100%; border:none;",
+    src = "www/RWM_poster.pdf#zoom=25"
+  )
+)
+
+```
+
+# Map
+
+```{r}
+mainPanel(
+  leafletOutput("interactivePlot"),
+  h3("Right-wing extremist mobilization by county 2005-2022"),
+  h5(HTML("This visualization displays the number of right-wing extremist demonstrations and participants by county from 2005 through 2022. <br>
+           <a href='https://data.gesis.org/sharing/#!Detail/10.7802/2256' target='_blank'> Source: Kanol, E.; Knoesel, J. (2021): Right-Wing Extremist Mobilization in Germany. Version 1.0.0. WZB Berlin Social Science Center. Dataset.</a>"))
+)
+```
+
+##  {.sidebar}
+
+```{r}
+sliderInput("selectedYear", "Here you can select individual years (L-R arrow keys for sliding):",
+            min = min(rwm1$year, na.rm = TRUE),
+            max = max(rwm1$year, na.rm = TRUE),
+            value = min(rwm1$year, na.rm = TRUE), 
+            step = 1,
+            sep = "",
+            ticks = FALSE)
+
+radioButtons("fillVariable", "Choose between the annually aggregated:",
+                   choices = c("Number of demonstrations" = "demo_count",
+                               "Number of participants" = "participants"))
+
+```
+
+```{r}
+#| context: server
+
+
+output$interactivePlot <- renderLeaflet({
+
+    rwm1_filtered <- filter(rwm1, year == input$selectedYear)
+
+    fill_variable <- if(input$fillVariable == "demo_count")  {
+      "demo_count"
+      } else {
+        "participants"
+        }
+
+    # Determine the range of log-transformed values for coloring
+    limits <- c(0, max(log10(rwm1[[fill_variable]]+1), na.rm = TRUE))
+
+    color_pal <- colorNumeric(palette = viridis(256, option = "B"), domain = limits)
+
+
+    # Create the Leaflet map
+    leaflet(rwm1_filtered) %>%
+      addTiles() %>%
+      addProviderTiles(providers$CartoDB.Positron) %>%
+      addPolygons(
+        fillColor = ~color_pal(log10(rwm1_filtered[[fill_variable]])), # Log10 transfo for better scaling
+        weight = 1,
+        opacity = 1,
+        color = "gray",
+        dashArray = "2",
+        fillOpacity = 0.7,
+        smoothFactor = 0.5,
+        label = ~sprintf("%s | Count: %s",
+                     rwm1_filtered$kreis,
+                     rwm1_filtered[[fill_variable]]-1),
+        highlightOptions = highlightOptions(
+          weight = 3,
+          color = "#666",
+          dashArray = "",
+          fillOpacity = 0.7,
+          bringToFront = TRUE
+          )
+        ) %>%
+      setView(lng = 10.5, lat = 51.2, zoom = 6) %>%
+      addLegend(
+        pal = color_pal,
+        values = ~log10(rwm1[[fill_variable]] +1),
+        opacity = 0.7,
+        title = "Count:",
+        position = "bottomright",
+        labFormat = labelFormat(transform = function(x) round(10^x)) # Manually adjust label format to show original scale
+        )
+  })
+
+
+
+```
+
+# Timeline
+
+```{r}
+mainPanel(
+  h3("Timeline of right-wing extremist demonstrations by federal state and year (2005-2022)"),
+  h5(HTML("This chart presents the number of right-wing extremist demonstrations and participants by state from 2005 through 2022. While the data can be disaggregated monthly for time-series analysis, we have opted for annual aggregation to enhance clarity. <br> 
+           <a href='https://data.gesis.org/sharing/#!Detail/10.7802/2256' target='_blank'> Source: Kanol, E.; Knoesel, J. (2021): Right-Wing Extremist Mobilization in Germany. Version 1.0.0. WZB Berlin Social Science Center. Dataset.</a>")),
+  plotlyOutput("plot_time")
+)
+```
+
+##  {.sidebar}
+
+```{r}
+
+sidebarPanel(
+  sliderInput("time", "You can define the time frame here:",
+              min = min(as.numeric(rwm2$year), na.rm = TRUE), 
+              max = max(as.numeric(rwm2$year), na.rm = TRUE),
+              value = c(min(as.numeric(rwm2$year), na.rm = TRUE), 
+                        max(as.numeric(rwm2$year), na.rm = TRUE)),
+              sep = ""),
+  
+  radioButtons("selectVariable", "Choose between the monthly aggregated:",
+               choices = c("Number of demonstrations" = "demo_count",
+                           "Number of participants" = "participants")),
+  
+  checkboxGroupInput("BL", label = "Select a Federal State",
+                     choices =c("Baden-Württemberg" = "BW",
+                                "Bavaria" = "BY",
+                                "Berlin" = "BE",
+                                "Brandenburg" = "BB",
+                                "Bremen" = "HB",
+                                "Hamburg" = "HH",
+                                "Hesse" = "HE",
+                                "Lower Saxony" = "NI",
+                                "Mecklenburg-Western Pomerania" = "MV",
+                                "North Rhine-Westphalia" = "NW",
+                                "Rhineland-Palatinate" = "RP",
+                                "Saarland" = "SL",
+                                "Saxony" = "SN",
+                                "Saxony-Anhalt" = "ST",
+                                "Schleswig-Holstein" = "SH",
+                                "Thuringia" = "TH"),
+                     selected = unique(rwm2$state))
+  )
+  
+```
+
+```{r}
+#| context: server
+
+output$plot_time <- renderPlotly({
+
+  # Determine the selected variable (demonstration count or participants)
+  select_variable <- input$selectVariable  # Directly using input$fillVariable
+
+  # Create a named vector for the full state names
+  state_names <- c("BW" = "Baden-Württemberg",
+                   "BY" = "Bavaria",
+                   "BE" = "Berlin",
+                   "BB" = "Brandenburg",
+                   "HB" = "Bremen",
+                   "HH" = "Hamburg",
+                   "HE" = "Hesse",
+                   "NI" = "Lower Saxony",
+                   "MV" = "Mecklenburg-Western Pomerania",
+                   "NW" = "North Rhine-Westphalia",
+                   "RP" = "Rhineland-Palatinate",
+                   "SL" = "Saarland",
+                   "SN" = "Saxony",
+                   "ST" = "Saxony-Anhalt",
+                   "SH" = "Schleswig-Holstein",
+                   "TH" = "Thuringia")
+
+  # Define custom colors corresponding to the full state names
+  custom_colors <- c(
+    "BW" = "deeppink", "BY" = "forestgreen",
+    "BE" = "gold", "BB" = "cornflowerblue",
+    "HB" = "#aaffc9", "HH" = "darkorchid4",
+    "HE" = "cyan1", "MV" = "gray0",
+    "NI" = "#bcf60c", "NW" = "burlywood4",
+    "RP" = "darkcyan", "SL" = "plum1",
+    "SN" = "blue4", "ST" = "seagreen4",
+    "SH" = "firebrick1", "TH" = "chocolate"
+  )
+
+  # Filter the data based on selected time range and states
+  rwm2_filtered <- rwm2 %>%
+    filter(year >= input$time[1] & year <= input$time[2] &
+           state %in% input$BL)
+
+  # Ensure there are no missing values in the selected variable
+  rwm2_filtered <- rwm2_filtered %>%
+    filter(!is.na(.data[[select_variable]]))  # Using .data to evaluate fill_variable
+
+  # Add tooltip text with full state names
+  rwm2_filtered <- rwm2_filtered %>%
+    mutate(tooltip_text = paste0("Year: ", year, "<br>",
+                                 "State: ", state_names[state], "<br>",  # Use the full name in the tooltip
+                                 ifelse(select_variable == "demo_count", 
+                                        "Demonstrations: ", "Participants: "), 
+                                 .data[[select_variable]]))
+
+  # Create the plot
+  p <- ggplot(rwm2_filtered, aes(x = year, 
+                                 y = state, 
+                                 color = state,  # Map color to state names
+                                 text = tooltip_text)) + 
+    geom_line(aes(group = state, y = .data[[select_variable]])) +  
+    geom_point(aes(y = .data[[select_variable]])) +  
+    scale_color_manual(values = custom_colors) +  # Apply custom colors
+    scale_y_discrete(labels = NULL) +  # Hides the state labels on the y-axis
+    labs(x = "Year", 
+         y = ifelse(select_variable == "demo_count", "Number of Demonstrations", "Number of Participants")) +
+    theme_minimal()
+
+  # Convert to interactive plotly object
+  ggplotly(p, tooltip = "text") %>% 
+    layout(dragmode = "select")
+})
+
+
+
+```
+
+
+
+
