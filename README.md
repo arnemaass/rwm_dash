@@ -6,13 +6,13 @@ https://germanextremismplotly.shinyapps.io/rwm_dash_en/#start
 The data is available at: 
 https://data.gesis.org/sharing/#!Detail/10.7802/2256
 
-![image](https://github.com/user-attachments/assets/669e8386-000c-42b4-98a0-65796f95960a)
+![image](https://github.com/user-attachments/assets/609fc087-b0d2-4e60-ad18-de2c9186b75f)
 
-![image](https://github.com/user-attachments/assets/d4a56f9a-f1b9-4e57-92cf-aa2ee758e1f3)
+![image](https://github.com/user-attachments/assets/7bbdb80c-9d5a-489f-89b4-c552200bf257)
 
-![image](https://github.com/user-attachments/assets/ba182d15-9167-4aa2-9c77-ea6ca47648e2)
+![image](https://github.com/user-attachments/assets/3aa5f461-798e-43ab-918d-cb7b7d3e532a)
 
-![image](https://github.com/user-attachments/assets/6259e84d-2729-4a7e-b30e-5a219c2e6d9d)
+![image](https://github.com/user-attachments/assets/c57482e3-4114-4a7f-8e0a-cb579ce22fcf)
 
-![image](https://github.com/user-attachments/assets/0bfb0c97-f55a-4c21-8594-180b83c3487d)
+![image](https://github.com/user-attachments/assets/c6b375dd-e8c4-4141-ab6d-019fe37302bc)
 
