@@ -14,4 +14,5 @@ https://data.gesis.org/sharing/#!Detail/10.7802/2256
 
 ![image](https://github.com/user-attachments/assets/6259e84d-2729-4a7e-b30e-5a219c2e6d9d)
 
+![image](https://github.com/user-attachments/assets/0bfb0c97-f55a-4c21-8594-180b83c3487d)
 
