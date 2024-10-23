@@ -16,7 +16,7 @@ server: shiny
 ```{r}
 #| context: setup
 
-rm(list = ls())
+# rm(list = ls())
 
 # locally
 # setwd("C:/Users/user/OneDrive/Desktop/WZB/PMK/2024/rwm_dash")
@@ -24,9 +24,7 @@ rm(list = ls())
 # setwd("Z:/Shared/Shiny/2024/rwm_dash")
 # getwd()
 
-
 library(tidyverse)
-library(quarto)
 library(arrow) # PARQUET FOR FASTER LOADING
 library(ggplot2)
 library(viridis)
@@ -41,7 +39,9 @@ library(shiny)
 
 rwm1<- readRDS("data/rwm_shiny.rds")
 rwm2<- read_parquet("data/rwm_stateyear.parquet") # %>% select(participants, yearmonth, state, year )
-
+rwm3 <- read_parquet("data/data_clean23.parquet") %>% 
+  select(date, participants, state) %>%
+  mutate(year = year(date))
 
 ```
 
@@ -61,10 +61,17 @@ mainPanel(
     At the top of the dashboard, you can navigate between visualizations and apply filters according to your preferences.
     <br><br>
     <ul style='text-align: left; display: inline-block;'>
-      <li><strong>Overview:</strong> Offers a static, downloadable wall poster summarizing the main findings.</li>
-      <li><strong>Map:</strong> Displays an interactive county-level mobilization map of demonstrations classified by the Domestic Intelligence Service as right-wing extremist.</li>
-      <li><strong>Timeline:</strong> Provides an interactive aggregation of demonstrations at the federal state level and illustrates their development over time.</li>
-    </ul>"
+     <li><strong>Overview:</strong> A static, downloadable wall poster summarizing the main findings.</li>
+      <li><strong>Map:</strong> An interactive county-level mobilization map showing demonstrations classified by the Domestic Intelligence Service as right-wing extremist.</li>
+      <li><strong>Timeline:</strong> An interactive aggregation of demonstrations at the federal state level, illustrating their development over time.</li>
+      <li><strong>Protest Sizes:</strong> An interactive graphic depicting indiviudal protest size by federal state across time.</li>
+    </ul>
+    <p>Please explore each section to dive deeper into the data.</p>
+
+    <br>
+    <br>
+    <br> 
+           <a href='https://data.gesis.org/sharing/#!Detail/10.7802/2256' target='_blank' style='font-size: 16px;'> Data is available at: Kanol, E.; Knoesel, J. (2021): Right-Wing Extremist Mobilization in Germany. Version 1.0.0. WZB Berlin Social Science Center. Dataset.</a>"
   ), style = "text-align: center;"),
   tags$br(),
   tags$div(
@@ -109,7 +116,7 @@ mainPanel(
   leafletOutput("interactivePlot"),
   h3("Right-wing extremist mobilization by county 2005-2022"),
   h5(HTML("This visualization displays the number of right-wing extremist demonstrations and participants by county from 2005 through 2022. <br>
-           <a href='https://data.gesis.org/sharing/#!Detail/10.7802/2256' target='_blank'> Source: Kanol, E.; Knoesel, J. (2021): Right-Wing Extremist Mobilization in Germany. Version 1.0.0. WZB Berlin Social Science Center. Dataset.</a>"))
+           <a href='https://data.gesis.org/sharing/#!Detail/10.7802/2256' target='_blank'style='font-size: 12px;'> Source: Kanol, E.; Knoesel, J. (2021): Right-Wing Extremist Mobilization in Germany. Version 1.0.0. WZB Berlin Social Science Center. Dataset.</a>"))
 )
 ```
 
@@ -194,7 +201,7 @@ output$interactivePlot <- renderLeaflet({
 mainPanel(
   h3("Timeline of right-wing extremist demonstrations by federal state and year (2005-2022)"),
   h5(HTML("This chart presents the number of right-wing extremist demonstrations and participants by state from 2005 through 2022. While the data can be disaggregated monthly for time-series analysis, we have opted for annual aggregation to enhance clarity. <br> 
-           <a href='https://data.gesis.org/sharing/#!Detail/10.7802/2256' target='_blank'> Source: Kanol, E.; Knoesel, J. (2021): Right-Wing Extremist Mobilization in Germany. Version 1.0.0. WZB Berlin Social Science Center. Dataset.</a>")),
+           <a href='https://data.gesis.org/sharing/#!Detail/10.7802/2256' target='_blank', style='font-size: 12px;'> Source: Kanol, E.; Knoesel, J. (2021): Right-Wing Extremist Mobilization in Germany. Version 1.0.0. WZB Berlin Social Science Center. Dataset.</a>")),
   plotlyOutput("plot_time")
 )
 ```
@@ -303,7 +310,9 @@ output$plot_time <- renderPlotly({
     scale_y_discrete(labels = NULL) +  # Hides the state labels on the y-axis
     labs(x = "Year", 
          y = ifelse(select_variable == "demo_count", "Number of Demonstrations", "Number of Participants")) +
-    theme_minimal()
+    theme_minimal() +
+    theme(text = element_text(family = "Arial"))
+
 
   # Convert to interactive plotly object
   ggplotly(p, tooltip = "text") %>% 
@@ -315,5 +324,162 @@ output$plot_time <- renderPlotly({
 ```
 
 
+# Protest Size
 
 
+```{r}
+mainPanel(
+  plotlyOutput("bubblePlot"),
+  h3("Far-Right Protest sizes by Federal States Over Time"),
+  h5(HTML("This visualization displays the protest size and frequencies of far-right extremist demonstrations  by federal state over time. <br>
+           <a href='https://data.gesis.org/sharing/#!Detail/10.7802/2256' target= '_blank' style='font-size: 12px;'> Source: Kanol, E.; Knoesel, J. (2021): Right-Wing Extremist Mobilization in Germany. Version 1.0.0. WZB Berlin Social Science Center. Dataset.</a>"))
+)
+```
+
+
+## Sidebar Inputs {.sidebar}
+
+```{r}
+sliderInput("bubbleTimeRange", "Select Time Range:",
+            min = min(rwm3$year, na.rm = TRUE),
+            max = max(rwm3$year, na.rm = TRUE),
+            value = c(min(rwm3$year, na.rm = TRUE), max(rwm3$year, na.rm = TRUE)),
+            step = 1,
+            sep = "",
+            ticks = FALSE)
+
+checkboxGroupInput("bubbleStates", "Select Federal States:",
+                   choices = c(
+                     "Baden-Württemberg" = "BW",
+                     "Bavaria" = "BY",
+                     "Berlin" = "BE",
+                     "Brandenburg" = "BB",
+                     "Bremen" = "HB",
+                     "Hamburg" = "HH",
+                     "Hesse" = "HE",
+                     "Lower Saxony" = "NI",
+                     "Mecklenburg-Western Pomerania" = "MV",
+                     "North Rhine-Westphalia" = "NW",
+                     "Rhineland-Palatinate" = "RP",
+                     "Saarland" = "SL",
+                     "Saxony" = "SN",
+                     "Saxony-Anhalt" = "ST",
+                     "Schleswig-Holstein" = "SH",
+                     "Thuringia" = "TH"
+                   ),
+                   selected = c("BW", "BY", "BE", "BB", "HB", "HH", "HE", "NI",
+                                "MV", "NW", "RP", "SL", "SN", "ST", "SH", "TH"))
+
+```
+
+
+```{r}
+#| context: server
+
+output$bubblePlot <- renderPlotly({
+
+    rwm3 <- rwm3 %>%
+    mutate(
+      date = as.Date(date),
+      year = as.numeric(format(date, "%Y")),
+      month = as.numeric(format(date, "%m")),
+      yearmonth = as.numeric(format(date, "%Y%m"))
+    )
+
+  # Filter the data based on user inputs
+  state_filtered <- rwm3 %>%
+    filter(!is.na(participants) & !is.na(yearmonth)) %>%
+    filter(year >= input$bubbleTimeRange[1] & year <= input$bubbleTimeRange[2]) %>%
+    filter(state %in% input$bubbleStates) %>%
+    mutate(
+      xpos = as.integer(factor(yearmonth, levels = sort(unique(yearmonth))))
+    )
+
+  # Calculate unique breaks and labels for the x-axis
+  unique_mappings <- state_filtered %>%
+    ungroup() %>%
+    select(xpos, yearmonth) %>%
+    distinct() %>%
+    mutate(
+      year = floor(yearmonth / 100)
+    ) %>%
+    group_by(year) %>%
+    summarise(xpos = min(xpos)) %>%
+    ungroup()
+
+  # Determine which years to display based on the selected time range
+  displayed_years <- seq(input$bubbleTimeRange[1], input$bubbleTimeRange[2], by = 1)
+  unique_mappings <- unique_mappings %>% filter(year %in% displayed_years)
+
+  unique_breaks <- unique_mappings$xpos
+  unique_labels <- unique_mappings$year
+
+  # Create tooltip text
+  state_filtered <- state_filtered %>%
+    mutate(tooltip_text = paste0(
+      "Date: ", format(date, "%Y-%m-%d"), "<br>",
+      "Federal State: ", state, "<br>",
+      "Participants: ", participants
+    ))
+
+  # Create the ggplot
+  g <- ggplot(state_filtered, aes(
+      x = xpos, y = state, size = participants, text = tooltip_text
+    )) +
+    geom_point(alpha = 0.4, shape = 21, aes(color = state)) +  # Dynamic coloring by state
+    theme_minimal() +
+    scale_y_discrete(
+      labels = c(
+        "BW" = "Baden-Württemberg",
+        "BY" = "Bavaria",
+        "BE" = "Berlin",
+        "BB" = "Brandenburg",
+        "HB" = "Bremen",
+        "HH" = "Hamburg",
+        "HE" = "Hesse",
+        "NI" = "Lower Saxony",
+        "MV" = "Mecklenburg-Western Pomerania",
+        "NW" = "North Rhine-Westphalia",
+        "RP" = "Rhineland-Palatinate",
+        "SL" = "Saarland",
+        "SN" = "Saxony",
+        "ST" = "Saxony-Anhalt",
+        "SH" = "Schleswig-Holstein",
+        "TH" = "Thuringia"
+      ),
+      limits = rev(c(
+        "BW", "BY", "BE", "BB", "HB", "HH", "HE", "NI",
+        "MV", "NW", "RP", "SL", "SN", "ST", "SH", "TH"
+      ))
+    ) +
+    scale_x_continuous(
+      breaks = unique_breaks, labels = unique_labels
+    ) +
+    scale_size_continuous(
+      range = c(3, 25),  # Adjust the range for better visibility
+      breaks = c(500, 1000, 2000, 3000, 4000, 5000),
+      name = "Participants"
+    ) +
+    ggtitle("Far-Right Marches by Federal States Over Time") +
+    labs(
+      x = "Year",
+      y = "Federal State",
+      color = "Federal State"
+    ) +
+    theme(
+      text = element_text(family = "Arial"),
+      legend.position = "none" 
+    )
+
+  # Convert to Plotly for interactivity
+  ggplotly(g, tooltip = "text") %>%
+    layout(
+      dragmode = "zoom",
+      xaxis = list(title = "Year"),
+      yaxis = list(title = "Federal State"),
+      legend = list(orientation = 'h', x = 0.5, xanchor = 'center')
+    )
+})
+
+
+```

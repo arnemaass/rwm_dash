@@ -7,7 +7,7 @@ library(tidyverse)
 library(sf)
 library(arrow)
 
-rwm<- readRDS("data/data_kreise.rds") # already merged with district shapefiles
+rwm<- readRDS("Z:/Shared/rechte Demos_v3/heatmap_data/data_kreise.rds") # already merged with district shapefiles
 
 
 ##  Create a complete geometry grid for all years
@@ -55,36 +55,9 @@ rwm2 <- all_combinations %>%
          demo_count = ifelse(is.na(demo_count), 0, demo_count),
          year = substr(year, 1, 4))
 
-
+# Save the data
 write_parquet(rwm2, "data/rwm_stateyear.parquet")
+getwd()
+rwm3 <-  readRDS("Z:/Shared/rechte Demos_v3/data/data_clean23.rds")
+write_parquet(rwm3, "data/data_clean23.parquet")
 
-
-## Aggregate the participants and demonstration count by month and federal state
-
-
-# Generate all combinations of yearmonth and state
-all_combinations <- rwm %>% 
-  st_set_geometry(NULL) %>%
-  select(yearmonth, state) %>%
-  distinct() %>%
-  complete(yearmonth = unique(rwm$yearmonth), state = unique(rwm$state)) %>% 
-  na.omit()
-
-# Aggregate the data
-rwm3 <- rwm  %>%
-  st_set_geometry(NULL) %>%
-  group_by(yearmonth, state) %>%
-  summarise(participants = sum(participants, na.rm = TRUE),
-            demo_count = n()) %>%
-  ungroup()  
-
-
-# Merge with all_combinations to retain missing months/states
-rwm3 <- all_combinations %>%
-  left_join(rwm2, by = c("yearmonth", "state")) %>%
-  mutate(participants = ifelse(is.na(participants), 0, participants),
-         demo_count = ifelse(is.na(demo_count), 0, demo_count),
-         yearmonth = substr(yearmonth, 1, 4))
-
-
-write_parquet(rwm3, "data/rwm_statemonth.parquet")
