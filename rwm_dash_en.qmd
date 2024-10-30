@@ -200,7 +200,7 @@ output$interactivePlot <- renderLeaflet({
 ```{r}
 mainPanel(
   h3("Timeline of right-wing extremist demonstrations by federal state and year (2005-2022)"),
-  h5(HTML("This chart presents the number of right-wing extremist demonstrations and participants by state from 2005 through 2022. While the data can be disaggregated monthly for time-series analysis, we have opted for annual aggregation to enhance clarity. <br> 
+  h5(HTML("This chart presents the number of right-wing extremist demonstrations and participants by state from 2005 through 2022. While the data can be disaggregated daily for time-series analysis, we have opted for annual aggregation to enhance clarity. <br> 
            <a href='https://data.gesis.org/sharing/#!Detail/10.7802/2256' target='_blank', style='font-size: 12px;'> Source: Kanol, E.; Knoesel, J. (2021): Right-Wing Extremist Mobilization in Germany. Version 1.0.0. WZB Berlin Social Science Center. Dataset.</a>")),
   plotlyOutput("plot_time")
 )
@@ -330,8 +330,8 @@ output$plot_time <- renderPlotly({
 ```{r}
 mainPanel(
   plotlyOutput("bubblePlot"),
-  h3("Far-Right Protest sizes by Federal States Over Time"),
-  h5(HTML("This visualization displays the protest size and frequencies of far-right extremist demonstrations  by federal state over time. <br>
+  h3("Right-wing extremist protest sizes by federal state over time"),
+  h5(HTML("This visualization shows the scope and frequency of right-wing extremist demonstrations by federal state. <br>
            <a href='https://data.gesis.org/sharing/#!Detail/10.7802/2256' target= '_blank' style='font-size: 12px;'> Source: Kanol, E.; Knoesel, J. (2021): Right-Wing Extremist Mobilization in Germany. Version 1.0.0. WZB Berlin Social Science Center. Dataset.</a>"))
 )
 ```
@@ -460,7 +460,6 @@ output$bubblePlot <- renderPlotly({
       breaks = c(500, 1000, 2000, 3000, 4000, 5000),
       name = "Participants"
     ) +
-    ggtitle("Far-Right Marches by Federal States Over Time") +
     labs(
       x = "Year",
       y = "Federal State",
