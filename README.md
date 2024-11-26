@@ -4,7 +4,7 @@ This is the repository for creating the right-wing extremist mobilization dashbo
 https://germanextremismplotly.shinyapps.io/rwm_dash_en/#start
 
 The data is available at: 
-https://data.gesis.org/sharing/#!Detail/10.7802/2256
+[https://data.gesis.org/sharing/#!Detail/10.7802/2256](https://doi.org/10.7802/2774)
 
 ![image](https://github.com/user-attachments/assets/609fc087-b0d2-4e60-ad18-de2c9186b75f)
 
