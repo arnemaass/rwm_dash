@@ -71,7 +71,7 @@ mainPanel(
     <br>
     <br>
     <br> 
-           <a href='https://data.gesis.org/sharing/#!Detail/10.7802/2256' target='_blank' style='font-size: 16px;'> Data is available at: Kanol, E.; Knoesel, J. (2021): Right-Wing Extremist Mobilization in Germany. Version 1.0.0. WZB Berlin Social Science Center. Dataset.</a>"
+           <a href='https://doi.org/10.7802/2774' target='_blank' style='font-size: 16px;'> Data is available at: Kanol, E.; Knoesel, J.; Maaß, A. (2024): Right-Wing Extremist Mobilization in Germany. Version 2.0.0. WZB Berlin Social Science Center. Dataset.</a>"
   ), style = "text-align: center;"),
   tags$br(),
   tags$div(
@@ -116,7 +116,7 @@ mainPanel(
   leafletOutput("interactivePlot"),
   h3("Right-wing extremist mobilization by county 2005-2022"),
   h5(HTML("This visualization displays the number of right-wing extremist demonstrations and participants by county from 2005 through 2022. <br>
-           <a href='https://data.gesis.org/sharing/#!Detail/10.7802/2256' target='_blank'style='font-size: 12px;'> Source: Kanol, E.; Knoesel, J. (2021): Right-Wing Extremist Mobilization in Germany. Version 1.0.0. WZB Berlin Social Science Center. Dataset.</a>"))
+           <a href='https://doi.org/10.7802/2774' target='_blank'style='font-size: 12px;'> Source: Kanol, E.; Knoesel, J.; Maaß, A. (2024): Right-Wing Extremist Mobilization in Germany. Version 2.0.0. WZB Berlin Social Science Center. Dataset.</a>"))
 )
 ```
 
@@ -201,7 +201,7 @@ output$interactivePlot <- renderLeaflet({
 mainPanel(
   h3("Timeline of right-wing extremist demonstrations by federal state and year (2005-2022)"),
   h5(HTML("This chart presents the number of right-wing extremist demonstrations and participants by state from 2005 through 2022. While the data can be disaggregated daily for time-series analysis, we have opted for annual aggregation to enhance clarity. <br> 
-           <a href='https://data.gesis.org/sharing/#!Detail/10.7802/2256' target='_blank', style='font-size: 12px;'> Source: Kanol, E.; Knoesel, J. (2021): Right-Wing Extremist Mobilization in Germany. Version 1.0.0. WZB Berlin Social Science Center. Dataset.</a>")),
+           <a href='https://doi.org/10.7802/2774' target='_blank', style='font-size: 12px;'> Source: Kanol, E.; Knoesel, J.; Maaß, A. (2024): Right-Wing Extremist Mobilization in Germany. Version 2.0.0. WZB Berlin Social Science Center. Dataset.</a>")),
   plotlyOutput("plot_time")
 )
 ```
@@ -332,7 +332,7 @@ mainPanel(
   plotlyOutput("bubblePlot"),
   h3("Right-wing extremist protest sizes by federal state over time"),
   h5(HTML("This visualization shows the scope and frequency of right-wing extremist demonstrations by federal state. <br>
-           <a href='https://data.gesis.org/sharing/#!Detail/10.7802/2256' target= '_blank' style='font-size: 12px;'> Source: Kanol, E.; Knoesel, J. (2021): Right-Wing Extremist Mobilization in Germany. Version 1.0.0. WZB Berlin Social Science Center. Dataset.</a>"))
+           <a href='https://doi.org/10.7802/2774' target= '_blank' style='font-size: 12px;'> Source: Kanol, E.; Knoesel, J.; Maaß, A. (2024): Right-Wing Extremist Mobilization in Germany. Version 2.0.0. WZB Berlin Social Science Center. Dataset.</a>"))
 )
 ```
 
